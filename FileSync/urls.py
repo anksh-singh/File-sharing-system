@@ -20,5 +20,5 @@ from myapp import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', views.login_view, name='login'),
-    path('upload/', views.upload_file, name='upload_file'),
+    path('upload/', views.FileUploadView, name='upload_file'),
 ]
