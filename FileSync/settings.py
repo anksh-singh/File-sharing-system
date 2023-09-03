@@ -27,6 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'myapp.OpsCliUsers'
+
 
 # Application definition
 
@@ -82,10 +84,23 @@ WSGI_APPLICATION = 'FileSync.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
+# Mysql db setup
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'anksh_users',
+        'USER': 'root',
+        'PASSWORD': '8BwPEGmJi/012h+JY',
+        'HOST': 'localhost',   # Or the domain name if using a remote database
+        'PORT': '3306',        # default MySQL port
     }
 }
 
