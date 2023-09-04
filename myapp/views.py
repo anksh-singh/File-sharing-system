@@ -104,7 +104,7 @@ def FileUploadView(request):
             return Response({'error': 'Invalid file type'}, status=status.HTTP_400_BAD_REQUEST)
 
         if uploaded_file is None:
-            return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'No file uploaded'}, status=const.NOT_FOUND)
 
         fs_obj = FileSystemStorage()
         filename = fs_obj.save(uploaded_file.name, uploaded_file)
