@@ -2,7 +2,7 @@
 
 
 
-# Django Project Setup Guide
+# Project Setup
 
 ## Prerequisites
 
