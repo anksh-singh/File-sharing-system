@@ -2,7 +2,7 @@
 
 
 
-#Setup
+# Initial Setup
 
 #Add the required Creds before anything in .env file
 
