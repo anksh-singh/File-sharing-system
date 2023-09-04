@@ -113,7 +113,28 @@ def FileUploadView(request):
         return Response({'file_url': file_url}, status=const.SUCCESS_STATUS_CODE)
     
     
+#Download file API
+@api_view(['GET'])
+def download_file(request):
+    Response = {}
+    user = request.user
+    if user.user_type == "OPS":
+        return Response({'error': 'Not an Client User'}, status=status.HTTP_403_FORBIDDEN)
+    
+    file_id = request.GET.get("file_id", None)
+    try:
+        file_obj = UploadFile.objects.get(id=file_id)
+    except UploadFile.DoesNotExist:
+        return JsonResponse({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
 
+    if request.user != file_obj.uploaded_by:
+        return JsonResponse({'error': 'You do not have permission to download this file'}, status=const.PERMISSION_ERROR_CODE)
+    
+    download_link =file_obj.file.url
+    Response['download_link'] = download_link
+    Response['message'] = "File downloaded successfully!"
+    Response['status'] = const.SUCCESS_STATUS_CODE
+    return JsonResponse(Response)
 
     
     
