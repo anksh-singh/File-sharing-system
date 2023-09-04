@@ -2,7 +2,7 @@
 
 
 
-# Project Setup & Deployment strategy 
+# Project Setup And Deployment strategy 
 
 ## Prerequisites
 
