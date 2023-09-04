@@ -4,7 +4,8 @@
 
 #Setup
 
-Add the required Creds before anything in .env file
+#Add the required Creds before anything in .env file
+
 HOST_EMAIL=test@gmail.com 
 HOST_EMAIL_APP_PASSWORD=xyz
 FRONTEND_URL=
