@@ -13,14 +13,14 @@ DATABASE_NAME=name,
 DATABASE_USER=user,
 DATABASE_PASSWORD=passcode,
 
-#Create & Activate virtualenvironment 
+--Create & Activate virtualenvironment 
 python3 -m venv myenv
 source myenv\scripts\activate
 
-#Install the project dependencies with:-
+--Install the project dependencies with:-
 pip3 install -r requirements.txt
 
-Now run the project with this command:-
+--Now run the project with the following command:-
 python manage.py runserver
 
 
