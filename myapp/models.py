@@ -17,4 +17,4 @@ class OpsCliUsers(AbstractUser):
 class UploadFile(models.Model):
     uploaded_by = models.ForeignKey(OpsCliUsers, on_delete=models.CASCADE)
     file = models.FileField(upload_to='files/')
-    assign_id = models.IntegerField(unique=True)
+    assign_id = models.IntegerField()

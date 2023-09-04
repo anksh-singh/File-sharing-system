@@ -86,6 +86,7 @@ def signup_view(request):
 def login_view(request):
     response = {}
     data = json.loads(request.body)
+    # print(date.get)
     if user:= models.OpsCliUsers.objects.filter(email=data.get('email',None)).first():
         valid = check_password(data.get('password'), user.password)
         if not valid:
@@ -113,10 +114,10 @@ def FileUploadView(request):
         response = {}
         # data = json.loads(request.body)
         # print("dataa",data)
-        assign_user_id = request.GET.get('assign_to')
-        user = models.OpsCliUsers.objects.filter(id=request.GET.get('id')).first()
-        if user.user_type == "CLIENT":
-            return JsonResponse({'error': 'Not an Operational User'}, status=status.HTTP_403_FORBIDDEN)
+        assign_user_id = request.GET.get('assign_user_id')
+        if user := models.OpsCliUsers.objects.filter(id=request.GET.get('id')).first():
+            if user.user_type == "CLIENT":
+                return JsonResponse({'error': 'Not an Operational User'}, status=status.HTTP_403_FORBIDDEN)
 
         upload_file = request.FILES.get('file')
         if not (upload_file.name.endswith('.pptx') or upload_file.name.endswith('.docx') or upload_file.name.endswith('.xlsx')):
@@ -128,9 +129,6 @@ def FileUploadView(request):
         file_upload = models.UploadFile.objects.create(assign_id =assign_user_id, file = upload_file, uploaded_by = user)
 
         # fs_obj = FileSystemStorage()
-        # filename = fs_obj.save(upload_file.name, upload_file)
-        # file_url = fs_obj.url(filename)
-        
         return JsonResponse({"message" : "File uploaded successfully!"}, status=const.SUCCESS_STATUS_CODE)
     
     
@@ -138,22 +136,22 @@ def FileUploadView(request):
 @api_view(['GET'])
 def download_file(request):
     Response = {}
-    user = models.OpsCliUsers.objects.filter(id=request.GET.get('id')).first()
-    if user.user_type == "OPS":
-        return JsonResponse({'error': 'Not an Client User'}, status=status.HTTP_403_FORBIDDEN)
-    
+    if user := models.OpsCliUsers.objects.filter(id=request.GET.get('id')).first():
+        if user.user_type == "OPS":
+            return JsonResponse({'error': 'Not an Client User'}, status=status.HTTP_403_FORBIDDEN)
+
     file_id = request.GET.get("file_id", None)
     try:
         file_obj = UploadFile.objects.get(id=file_id)
     except UploadFile.DoesNotExist:
         return JsonResponse({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
-
-    if request.user != file_obj.uploaded_by:
+    print(request.user,file_obj.uploaded_by )
+    if user != file_obj.uploaded_by:
         return JsonResponse({'error': 'You do not have permission to download this file'}, status=const.PERMISSION_ERROR_CODE)
     
     download_link =file_obj.file.url
     Response['download_link'] = download_link
-    Response['message'] = "File downloaded successfully!"
+    Response['message'] = "Success"
     Response['status'] = const.SUCCESS_STATUS_CODE
     return JsonResponse(Response)
 
