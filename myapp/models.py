@@ -11,7 +11,9 @@ class OpsCliUsers(AbstractUser):
     )
     user_type = models.CharField(choices=USER_TYPE_CHOICES, max_length=10)
     username = models.CharField(max_length=40)
-    email = models.EmailField()
+    name = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(('email address'), unique=True)
+    
 
 class UploadFile(models.Model):
     uploaded_by = models.ForeignKey(OpsCliUsers, on_delete=models.CASCADE)
