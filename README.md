@@ -6,12 +6,12 @@
 
 #Add the required Creds before anything in .env file
 
-HOST_EMAIL=test@gmail.com 
-HOST_EMAIL_APP_PASSWORD=xyz
-FRONTEND_URL=
-DATABASE_NAME=
-DATABASE_USER=
-DATABASE_PASSWORD=
+HOST_EMAIL=test@gmail.com,
+HOST_EMAIL_APP_PASSWORD=xyz,
+FRONTEND_URL= example.com,
+DATABASE_NAME=name,
+DATABASE_USER=user,
+DATABASE_PASSWORD=passcode,
 
 #Create & Activate virtualenvironment 
 python3 -m venv myenv
