@@ -21,7 +21,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from .helper_func import get_activation_link
+from .helper_func import get_activation_link, get_tokens_for_user
 from cryptography.fernet import Fernet
 
 
@@ -40,12 +40,11 @@ def signup_view(request):
                 password=make_password(data.get('password')),
             )
             # triggering a emaill notification for verification
-            token = default_token_generator.make_token(user)
+            
             # uid = urlsafe_base64_encode(force_bytes(user.pk))
 
             # Mail objects
             site_link = get_activation_link(user)
-            print(site_link)
             mail_subject = 'Activate your FileSync account.'
             message = f'''
             Hello {user.name},
@@ -62,10 +61,13 @@ def signup_view(request):
                 fail_silently=False,
             )
             
+            token = get_tokens_for_user(user)
             cipher_suite = Fernet(Fernet.generate_key())
             encrypted_link = cipher_suite.encrypt(site_link.encode())
 
+            
             response['encrypted_url'] = encrypted_link.decode()
+            response['token'] = token
             response['statusCode'] = const.SUCCESS_STATUS_CODE
             response['message'] = 'Signed up successfully!'
             return JsonResponse(response)
@@ -81,21 +83,26 @@ def signup_view(request):
 # Login API
 @api_view(['POST'])
 def login_view(request):
-    username = request.data.get("username")
-    password = request.data.get("password")
-    user = authenticate(username=username, password=password)
-    if user:
-        token, _ = Token.objects.get_or_create(user=user)
-        data = {
-                'token': token.key,
-                'user_type' : user.user_type,   # based on the user id front-end can understand which dashboard to show for operation/client user
-                'user_id': user.id,
-                'username': user.username,
-                'message' : f"User logged as {user.user_typ} successfully!"
+    response = {}
+    data = json.loads(request.body)
+    if user:= models.OpsCliUsers.objects.filter(email=data.get('email')).first():
+        valid = check_password(data.get('password'), user.password)
+        if not valid:
+            response['statusCode'] = const.NOT_AUTHORIZED_ERROR_CODE
+            response['message'] = 'Login Failed! Please enter a correct email and password!'
+            return JsonResponse(response)
+    
+        token = get_tokens_for_user(user)
+        response[data] = {
+                "token": token,
+                "user_type" : user.user_type,   # based on the user id front-end can understand which dashboard to show for operation/client user
+                "user_id": user.id,
+                "email": user.email,
+                "message" : f"User logged as {user.user_typ} successfully!"
             }
-        return JsonResponse(data, status=200)
+        return JsonResponse(response, status=const.SUCCESS_STATUS_CODE)
     else:
-        return JsonResponse({'message': const.USER_NOT_FOUND}, status=const.NOT_AUTHORIZED_ERROR_CODE)  
+        return JsonResponse({"message": "User does not exist!"}, status=const.NOT_FOUND)  
     
     
     
