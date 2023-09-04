@@ -21,7 +21,8 @@ from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from helper_func import get_activation_link
+from .helper_func import get_activation_link
+from cryptography.fernet import Fernet
 
 
 # Sign up API
@@ -33,17 +34,18 @@ def signup_view(request):
         user_exist = models.OpsCliUsers.objects.filter(email=data.get('email')).first()
         if not user_exist:
             user = models.OpsCliUsers.objects.create(
-                email=data.get('email'),
                 name=data.get('name', ''),
+                email=data.get('email'),
                 user_type = data.get('user_type'),
                 password=make_password(data.get('password')),
             )
             # triggering a emaill notification for verification
             token = default_token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            # uid = urlsafe_base64_encode(force_bytes(user.pk))
 
             # Mail objects
             site_link = get_activation_link(user)
+            print(site_link)
             mail_subject = 'Activate your FileSync account.'
             message = f'''
             Hello {user.name},
@@ -55,19 +57,25 @@ def signup_view(request):
             send_mail(
                 mail_subject,
                 message,
-                'noreply0110@gmail.com', 
+                'singhanksh7@gmail.com', 
                 [user.email], 
                 fail_silently=False,
             )
-     
+            
+            cipher_suite = Fernet(Fernet.generate_key())
+            encrypted_link = cipher_suite.encrypt(site_link.encode())
+
+            response['encrypted_url'] = encrypted_link.decode()
             response['statusCode'] = const.SUCCESS_STATUS_CODE
             response['message'] = 'Signed up successfully!'
-              
+            return JsonResponse(response)
+        
         else:
+            
             response['statusCode'] = const.ALREADY_EXIST_ERROR_CODE
             response['message'] = 'You have already registered. Please try to login!'
+            return JsonResponse(response)
    
-    return JsonResponse(response)
 
 
 # Login API

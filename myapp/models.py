@@ -10,7 +10,6 @@ class OpsCliUsers(AbstractUser):
         ('CLIENT', 'Client User'),
     )
     user_type = models.CharField(choices=USER_TYPE_CHOICES, max_length=10)
-    username = models.CharField(max_length=40)
     name = models.CharField(max_length=100, blank=True, null=True)
     email = models.EmailField(('email address'), unique=True)
     
