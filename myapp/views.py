@@ -25,6 +25,7 @@ from .helper_func import get_activation_link, get_tokens_for_user
 from cryptography.fernet import Fernet
 
 
+
 # Sign up API
 @api_view(['POST'])
 def signup_view(request):
@@ -85,7 +86,7 @@ def signup_view(request):
 def login_view(request):
     response = {}
     data = json.loads(request.body)
-    if user:= models.OpsCliUsers.objects.filter(email=data.get('email')).first():
+    if user:= models.OpsCliUsers.objects.filter(email=data.get('email',None)).first():
         valid = check_password(data.get('password'), user.password)
         if not valid:
             response['statusCode'] = const.NOT_AUTHORIZED_ERROR_CODE
@@ -93,12 +94,12 @@ def login_view(request):
             return JsonResponse(response)
     
         token = get_tokens_for_user(user)
-        response[data] = {
+        response = {
                 "token": token,
                 "user_type" : user.user_type,   # based on the user id front-end can understand which dashboard to show for operation/client user
                 "user_id": user.id,
                 "email": user.email,
-                "message" : f"User logged as {user.user_typ} successfully!"
+                "message" : f"User logged as {user.user_type} successfully!"
             }
         return JsonResponse(response, status=const.SUCCESS_STATUS_CODE)
     else:
@@ -109,32 +110,37 @@ def login_view(request):
 # Upload Files API
 @api_view(['POST'])
 def FileUploadView(request):
-        user = request.user
+        response = {}
+        # data = json.loads(request.body)
+        # print("dataa",data)
+        assign_user_id = request.GET.get('assign_to')
+        user = models.OpsCliUsers.objects.filter(id=request.GET.get('id')).first()
         if user.user_type == "CLIENT":
-            return Response({'error': 'Not an Operational User'}, status=status.HTTP_403_FORBIDDEN)
+            return JsonResponse({'error': 'Not an Operational User'}, status=status.HTTP_403_FORBIDDEN)
 
-        uploaded_file = request.FILES.get('file')
+        upload_file = request.FILES.get('file')
+        if not (upload_file.name.endswith('.pptx') or upload_file.name.endswith('.docx') or upload_file.name.endswith('.xlsx')):
+            return JsonResponse({'error': 'Invalid file type'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if upload_file is None:
+            return JsonResponse({'error': 'No file uploaded'}, status=const.NOT_FOUND)
         
-        if not (uploaded_file.name.endswith('.pptx') or uploaded_file.name.endswith('.docx') or uploaded_file.name.endswith('.xlsx')):
-            return Response({'error': 'Invalid file type'}, status=status.HTTP_400_BAD_REQUEST)
+        file_upload = models.UploadFile.objects.create(assign_id =assign_user_id, file = upload_file, uploaded_by = user)
 
-        if uploaded_file is None:
-            return Response({'error': 'No file uploaded'}, status=const.NOT_FOUND)
-
-        fs_obj = FileSystemStorage()
-        filename = fs_obj.save(uploaded_file.name, uploaded_file)
-        file_url = fs_obj.url(filename)
+        # fs_obj = FileSystemStorage()
+        # filename = fs_obj.save(upload_file.name, upload_file)
+        # file_url = fs_obj.url(filename)
         
-        return Response({'file_url': file_url}, status=const.SUCCESS_STATUS_CODE)
+        return JsonResponse({"message" : "File uploaded successfully!"}, status=const.SUCCESS_STATUS_CODE)
     
     
-#Download file API
+#Download file API,
 @api_view(['GET'])
 def download_file(request):
     Response = {}
-    user = request.user
+    user = models.OpsCliUsers.objects.filter(id=request.GET.get('id')).first()
     if user.user_type == "OPS":
-        return Response({'error': 'Not an Client User'}, status=status.HTTP_403_FORBIDDEN)
+        return JsonResponse({'error': 'Not an Client User'}, status=status.HTTP_403_FORBIDDEN)
     
     file_id = request.GET.get("file_id", None)
     try:

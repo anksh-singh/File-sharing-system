@@ -21,7 +21,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/signup/', views.signup_view, name='signup'),
     path('auth/login/', views.login_view, name='login'),
-    path('upload/', views.FileUploadView, name='upload_file'),
-    path('download-file/', views.download_file, name='download_file'),
+    path('app/file-upload/', views.FileUploadView, name='upload_file'),
+    path('app/download-file/', views.download_file, name='download_file'),
     
 ]
